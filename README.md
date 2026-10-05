@@ -1,6 +1,6 @@
 # Stunting target-leakage audit (E1–E5)
 
-Code for the IJIMAI manuscript *When Accuracy Is an Artifact: A Target-Leakage Audit of Machine
+Code for the manuscript *When Accuracy Is an Artifact: A Target-Leakage Audit of Machine
 Learning Models for Child Stunting Classification in Indonesia*.
 
 ## 1. Setup (once)
@@ -11,7 +11,7 @@ pip install -r requirements.txt
 python -m pytest -q             # must show: 13 passed
 ```
 
-## 2. Data (already placed in this zip)
+## 2. Data (included in `data/`)
 ```
 data/jeneponto/2021.xlsx ... 2024.xlsx      Mendeley v4, doi:10.17632/wzwpc9j5bx.4
 data/lombok/overal data.xlsx                 Mendeley v2, doi:10.17632/z4mrz37dm3.2
@@ -26,7 +26,6 @@ python run_all.py --dataset jeneponto        # about 30-60 min on a laptop
 python run_all.py --dataset lombok           # about 1-2 min
 pip freeze > results/environment.txt
 ```
-Then zip the whole `results/` folder and send it back.
 
 `--quick` (1 repeat) is only for checking that the code runs. Do not report quick results.
 
@@ -35,6 +34,7 @@ On a slow machine you can run the Jeneponto audit in chunks (each result is cach
 python run_chunk.py all E12      # then: all E3, all E1z, all E5b_abl, all E5b_full
 python run_chunk.py 2024 E12     # then: 2024 E3, 2024 E1z, 2024 E5b_abl, 2024 E5b_full
 ```
+Overfitting check (Table X): `python run_chunk.py all OF_full`, `all OF_abl`, `2024 OF_full`, `2024 OF_abl`.
 The manuscript tables were produced with this chunked run (full settings, 5 x 5 CV, 1000 bootstraps).
 
 ## 4. What the data checks found (handled automatically, all counts in data_report.json)
@@ -67,3 +67,11 @@ The manuscript tables were produced with this chunked run (full settings, 5 x 5 
 - CV: stratified 5-fold, 5 repeats; metrics are means over repeats; 95% CI from 1000 bootstrap
   resamples of the first repeat's out-of-fold predictions.
 - E5b "SMOTE before split" is evaluated on partly synthetic folds on purpose (the leaky practice).
+
+## 7. Data source and citation
+Both datasets are public on Mendeley Data and are redistributed here unchanged for reproducibility.
+Please cite the original datasets and check their licence on the Mendeley pages:
+- A. H. RS et al., Dataset Stunting and Nutritional Status of Toddler from Jeneponto Regency, South Sulawesi, Indonesia, Mendeley Data, v4, doi:10.17632/wzwpc9j5bx.4
+- A. A. Firdaus, Child stunting status dataset from East Lombok district, West Nusa Tenggara, Indonesia, Mendeley Data, v2, doi:10.17632/z4mrz37dm3.2
+
+WHO reference tables: WHO Child Growth Standards (2006), monthly LMS parameters for length/height-for-age and weight-for-age.

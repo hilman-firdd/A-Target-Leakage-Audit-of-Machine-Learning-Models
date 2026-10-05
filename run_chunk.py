@@ -28,5 +28,9 @@ elif exp == "E5b_abl":
     r = E.smote_leakage(d, ablated, t, cfg)
 elif exp == "E5b_full":
     r = E.smote_leakage(d, full, t, cfg)
+elif exp == "OF_full":
+    r = E.overfitting_check(d, full, t, cfg, "Overfitting check, full inputs")
+elif exp == "OF_abl":
+    r = E.overfitting_check(d, ablated, t, cfg, "Overfitting check, without height")
 r.to_csv(out / f"part_{exp}.csv", index=False)
 print(sub, exp, f"{time.time()-t0:.0f}s")

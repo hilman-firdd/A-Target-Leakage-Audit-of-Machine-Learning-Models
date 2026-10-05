@@ -166,3 +166,30 @@ def smote_leakage(df: pd.DataFrame, features: list[str], target: str, cfg, fast=
                      "pipeline": "SMOTE inside training folds", "n_evaluated": len(y),
                      **M.classification_metrics(y, prob, (prob >= 0.5).astype(int), prob)})
     return pd.DataFrame(rows)
+
+
+# ------------------------------------------------------------------ Overfitting check
+def overfitting_check(df: pd.DataFrame, features: list[str], target: str, cfg, label: str) -> pd.DataFrame:
+    """Compare training-fold and held-out-fold performance for each model.
+
+    A large train-test gap indicates overfitting. All scores reported elsewhere in the paper
+    are held-out (out-of-fold) scores, so overfitting cannot inflate them; this check shows
+    how large the gap is. The WHO rule has no fitted parameters and therefore no gap.
+    """
+    from sklearn.model_selection import cross_validate
+    d = df.dropna(subset=features + [target]).reset_index(drop=True)
+    X, y = d[features].values, d[target].astype(int).values
+    cv = StratifiedKFold(cfg.N_SPLITS, shuffle=True, random_state=cfg.SEED)
+    rows = [{"experiment": label, "features": "+".join(features), "model": "WHO rule (no training)",
+             "train_auroc": np.nan, "test_auroc": M.roc_auc_score(y, -d["haz"].values),
+             "train_f1": np.nan, "test_f1": M.f1_score(y, d["stunted_who"].values), "n": len(d)}]
+    for name, model in Z.overfit_models(cfg.SEED).items():
+        r = cross_validate(clone(model), X, y, cv=cv, scoring=["roc_auc", "f1"], return_train_score=True, n_jobs=1)
+        rows.append({"experiment": label, "features": "+".join(features), "model": name,
+                     "train_auroc": r["train_roc_auc"].mean(), "test_auroc": r["test_roc_auc"].mean(),
+                     "train_f1": r["train_f1"].mean(), "test_f1": r["test_f1"].mean(),
+                     "test_auroc_sd": r["test_roc_auc"].std(), "n": len(d)})
+    out = pd.DataFrame(rows)
+    out["auroc_gap"] = out["train_auroc"] - out["test_auroc"]
+    out["f1_gap"] = out["train_f1"] - out["test_f1"]
+    return out

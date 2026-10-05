@@ -43,3 +43,20 @@ def regressors(seed: int = 42, fast: bool = False) -> dict:
         "XGBoost": XGBRegressor(n_estimators=n_trees, max_depth=3, learning_rate=0.05, n_jobs=-1,
                                 random_state=seed, verbosity=0),
     }
+
+
+def overfit_models(seed: int = 42) -> dict:
+    """Models compared in the overfitting check (train vs. out-of-fold performance).
+
+    'XGBoost (regularized)' uses shallow trees, row/column subsampling, a minimum child
+    weight and an L2 penalty: the standard remedies for gradient-boosting overfitting.
+    """
+    return {
+        "Decision Tree (unpruned)": DecisionTreeClassifier(random_state=seed),
+        "Random Forest": RandomForestClassifier(n_estimators=300, n_jobs=-1, random_state=seed),
+        "XGBoost (default)": XGBClassifier(n_estimators=300, max_depth=6, learning_rate=0.1, subsample=0.9,
+                                           eval_metric="logloss", n_jobs=-1, random_state=seed, verbosity=0),
+        "XGBoost (regularized)": XGBClassifier(n_estimators=300, max_depth=3, learning_rate=0.05, subsample=0.8,
+                                               colsample_bytree=0.8, min_child_weight=5, reg_lambda=5.0,
+                                               eval_metric="logloss", n_jobs=-1, random_state=seed, verbosity=0),
+    }
